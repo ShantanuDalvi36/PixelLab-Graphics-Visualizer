@@ -5,7 +5,7 @@ import ts from 'typescript';
 
 const source = await readFile(new URL('../src/lib/algorithms.ts', import.meta.url), 'utf8');
 const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
-const { ddaLine, bresenhamLine, midpointCircle, transformShape, cohenSutherland, validateNumericInputs } = await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
+const { ddaLine, bresenhamLine, midpointCircle, transformShape, cohenSutherland, liangBarsky, validateNumericInputs } = await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
 const coord = (points) => points.map(({ x, y }) => `${x},${y}`);
 
 test('DDA handles steep, negative, reversed, and degenerate segments', () => {
@@ -69,14 +69,29 @@ test('raw form validation rejects missing, non-finite, and fractional raster inp
   assert.equal(validateNumericInputs({x1:'-2.25',y1:'0.5',x2:'3',y2:'4'},['x1','y1','x2','y2']),undefined);
 });
 
-test('paired comparison traces retain the same requested endpoints and independent iteration records', () => {
-  const start={x:-5,y:3},end={x:2,y:-4};
-  const dda=ddaLine(start,end),bres=bresenhamLine(start,end);
-  assert.deepEqual(dda.pixels[0],start);
-  assert.deepEqual(dda.pixels.at(-1),end);
-  assert.deepEqual(bres.pixels[0],start);
-  assert.deepEqual(bres.pixels.at(-1),end);
-  assert.ok(dda.steps[2].formula.includes('xᵢ₊₁'));
-  assert.ok(bres.steps[2].formula.includes('2ε'));
-  assert.notEqual(dda.steps[2].values,bres.steps[2].values);
+test('Liang–Barsky accepts, rejects, and clips with p/q and u interval steps', () => {
+  const window={xmin:-5,ymin:-3,xmax:5,ymax:4};
+  const accepted=liangBarsky({x:-2,y:0},{x:3,y:2},window);
+  assert.equal(accepted.result.status,'accepted');
+  assert.deepEqual(accepted.result.a,{x:-2,y:0});
+  assert.deepEqual(accepted.result.b,{x:3,y:2});
+  assert.ok(accepted.steps.every(step=>step.values.includes('p=')&&step.values.includes('q=')&&step.values.includes('u₁')&&step.values.includes('u₂')));
+
+  const partial=liangBarsky({x:-8,y:-1},{x:8,y:3},window);
+  assert.equal(partial.result.status,'accepted');
+  assert.ok(Math.abs(partial.result.a.x+5)<1e-9);
+  assert.ok(Math.abs(partial.result.a.y+.25)<1e-9);
+  assert.ok(Math.abs(partial.result.b.x-5)<1e-9);
+  assert.ok(Math.abs(partial.result.b.y-2.25)<1e-9);
+  assert.ok(partial.steps.some(step=>step.intersections?.length));
+
+  const reversed=liangBarsky({x:8,y:3},{x:-8,y:-1},window);
+  assert.equal(reversed.result.status,'accepted');
+  assert.ok(Math.abs(reversed.result.a.x-5)<1e-9);
+  assert.ok(Math.abs(reversed.result.b.x+5)<1e-9);
+
+  const rejected=liangBarsky({x:-8,y:5},{x:8,y:7},window);
+  assert.equal(rejected.result.status,'rejected');
+  assert.ok(rejected.steps.some(step=>step.title.startsWith('Reject')));
+  assert.equal(liangBarsky({x:0,y:0},{x:1,y:1},{xmin:2,ymin:0,xmax:1,ymax:3}).error !== undefined,true);
 });

@@ -1,0 +1,36 @@
+Update the existing PixelLab project with the following changes. Preserve the current interface, styling, layout, working features, and code wherever possible. Do not rebuild the project from scratch.
+
+### 1. Add Liang–Barsky Line Clipping
+- Add a new **Liang–Barsky Line Clipping** module immediately after Cohen–Sutherland in the existing algorithm sidebar.
+- Let users enter line endpoints and adjust the rectangular clipping window.
+- Visualize the original line, clipping boundaries, intersection points, and final clipped segment.
+- Display the \(p\) and \(q\) values for each boundary and update the entering parameter \(u_1\) and leaving parameter \(u_2\) step by step.
+- Explain the calculations in a concise learning panel.
+- Animate boundary evaluation and highlight the final visible segment.
+- Include examples for fully accepted, fully rejected, and partially clipped lines.
+
+### 2. Remove DDA vs. Bresenham Comparison
+- Remove the dedicated DDA vs. Bresenham comparison mode, including its navigation item, UI panels, and comparison-specific controls.
+- Keep DDA Line Drawing and Bresenham's Line Drawing as separate, fully functional modules.
+- Do not remove any other algorithms or their functionality.
+
+### 3. Add Simple, Meaningful Animations
+Add subtle animations to the existing visualizations without changing the overall design:
+- Draw lines and circles progressively, pixel by pixel.
+- Highlight the currently plotted pixel and active calculation.
+- Update iteration values and decision parameters smoothly.
+- Animate transformations smoothly between the original and transformed shapes.
+- Highlight clipping boundaries and intersection points as they are evaluated.
+- Add subtle transitions when switching algorithms or updating visualization panels.
+
+Provide working Play/Pause, Next Step, Reset, and animation-speed controls wherever applicable. Ensure users can pause the animation and inspect individual calculations.
+
+### Important Requirements
+- Maintain the existing dark pixel-grid aesthetic, colors, typography, layout, and responsive behavior.
+- Reuse the existing components, algorithms, and state management wherever possible.
+- Do not introduce unnecessary dependencies or duplicate existing functionality.
+- Ensure all algorithm calculations and visualizations remain mathematically correct.
+- Test the existing modules after making changes to confirm nothing has broken.
+- Update the README only if necessary to document the new Liang–Barsky module or changed controls.
+
+**First inspect the current project and identify the relevant files. Then make only the required changes. Do not regenerate the entire application or replace working components unnecessarily.**
